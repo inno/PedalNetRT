@@ -18,7 +18,7 @@ def main(args):
     """
 
     prepare(args)
-    model = PedalNet(vars(args))
+    model = PedalNet(**vars(args))
     trainer = pl.Trainer(
         resume_from_checkpoint=args.model if args.resume else None,
         gpus=None if args.cpu or args.tpu_cores else args.gpus,

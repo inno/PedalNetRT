@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 
 import pytorch_lightning as pl
@@ -107,15 +106,15 @@ def pre_emphasis_filter(x, coeff=0.95):
 
 
 class PedalNet(pl.LightningModule):
-    def __init__(self, hparams):
+    def __init__(self, *args, **kwargs):
         super(PedalNet, self).__init__()
+        self.save_hyperparameters()
         self.wavenet = WaveNet(
-            num_channels=hparams["num_channels"],
-            dilation_depth=hparams["dilation_depth"],
-            num_repeat=hparams["num_repeat"],
-            kernel_size=hparams["kernel_size"],
+            num_channels=kwargs["num_channels"],
+            dilation_depth=kwargs["dilation_depth"],
+            num_repeat=kwargs["num_repeat"],
+            kernel_size=kwargs["kernel_size"],
         )
-        self.hparams = hparams
 
     def prepare_data(self):
         ds = lambda x, y: TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
