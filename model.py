@@ -8,7 +8,16 @@ import os
 
 
 class CausalConv1d(torch.nn.Conv1d):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1, bias=True):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        dilation=1,
+        groups=1,
+        bias=True,
+    ):
         self.__padding = (kernel_size - 1) * dilation
 
         super(CausalConv1d, self).__init__(
@@ -48,11 +57,15 @@ def _conv_stack(dilations, in_channels, out_channels, kernel_size):
 
 
 class WaveNet(nn.Module):
-    def __init__(self, num_channels, dilation_depth, num_repeat, kernel_size=2):
+    def __init__(
+        self, num_channels, dilation_depth, num_repeat, kernel_size=2
+    ):
         super(WaveNet, self).__init__()
-        dilations = [2 ** d for d in range(dilation_depth)] * num_repeat
+        dilations = [2**d for d in range(dilation_depth)] * num_repeat
         internal_channels = int(num_channels * 2)
-        self.hidden = _conv_stack(dilations, num_channels, internal_channels, kernel_size)
+        self.hidden = _conv_stack(
+            dilations, num_channels, internal_channels, kernel_size
+        )
         self.residuals = _conv_stack(dilations, num_channels, num_channels, 1)
         self.input_layer = CausalConv1d(
             in_channels=1,
@@ -77,9 +90,16 @@ class WaveNet(nn.Module):
             out_hidden = hidden(x)
 
             # gated activation
-            #   split (32,16,3) into two (16,16,3) for tanh and sigm calculations
-            out_hidden_split = torch.split(out_hidden, self.num_channels, dim=1)
-            out = torch.tanh(out_hidden_split[0]) * torch.sigmoid(out_hidden_split[1])
+            #   split (32,16,3) into two (16,16,3) for tanh and sigm
+            #   calculations
+            out_hidden_split = torch.split(
+                out_hidden,
+                self.num_channels,
+                dim=1,
+            )
+            out = torch.tanh(out_hidden_split[0]) * torch.sigmoid(
+                out_hidden_split[1]
+            )
 
             skips.append(out)
 
@@ -102,7 +122,9 @@ def error_to_signal(y, y_pred):
 
 
 def pre_emphasis_filter(x, coeff=0.95):
-    return torch.cat((x[:, :, 0:1], x[:, :, 1:] - coeff * x[:, :, :-1]), dim=2)
+    return torch.cat(
+        (x[:, :, 0:1], x[:, :, 1:] - coeff * x[:, :, :-1]), dim=2
+    )
 
 
 class PedalNet(pl.LightningModule):
@@ -115,15 +137,22 @@ class PedalNet(pl.LightningModule):
             num_repeat=kwargs["num_repeat"],
             kernel_size=kwargs["kernel_size"],
         )
+        torch.set_float32_matmul_precision("high")
 
     def prepare_data(self):
-        ds = lambda x, y: TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
-        data = pickle.load(open(os.path.dirname(self.hparams.model) + "/data.pickle", "rb"))
+        def ds(x, y):
+            return TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
+
+        data = pickle.load(
+            open(os.path.dirname(self.hparams.model) + "/data.pickle", "rb")
+        )
         self.train_ds = ds(data["x_train"], data["y_train"])
         self.valid_ds = ds(data["x_valid"], data["y_valid"])
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.wavenet.parameters(), lr=self.hparams.learning_rate)
+        return torch.optim.Adam(
+            self.wavenet.parameters(), lr=self.hparams.learning_rate
+        )
 
     def train_dataloader(self):
         return DataLoader(
@@ -134,7 +163,9 @@ class PedalNet(pl.LightningModule):
         )
 
     def val_dataloader(self):
-        return DataLoader(self.valid_ds, batch_size=self.hparams.batch_size, num_workers=4)
+        return DataLoader(
+            self.valid_ds, batch_size=self.hparams.batch_size, num_workers=4
+        )
 
     def forward(self, x):
         return self.wavenet(x)

@@ -17,7 +17,9 @@ def save(name, data):
 def predict(args):
     model = PedalNet.load_from_checkpoint(args.model)
     model.eval()
-    train_data = pickle.load(open(os.path.dirname(args.model) + "/data.pickle", "rb"))
+    train_data = pickle.load(
+        open(os.path.dirname(args.model) + "/data.pickle", "rb")
+    )
 
     mean, std = train_data["mean"], train_data["std"]
 
@@ -27,13 +29,17 @@ def predict(args):
     length = len(in_data) - len(in_data) % sample_size
 
     # split into samples
-    in_data = in_data[:length].reshape((-1, 1, sample_size)).astype(np.float32)
+    in_data = (
+        in_data[:length].reshape((-1, 1, sample_size)).astype(np.float32)
+    )
 
     # standardize
     in_data = (in_data - mean) / std
 
     # pad each sample with previous sample
-    prev_sample = np.concatenate((np.zeros_like(in_data[0:1]), in_data[:-1]), axis=0)
+    prev_sample = np.concatenate(
+        (np.zeros_like(in_data[0:1]), in_data[:-1]), axis=0
+    )
     pad_in_data = np.concatenate((prev_sample, in_data), axis=2)
 
     pred = []

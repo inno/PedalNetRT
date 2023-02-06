@@ -1,6 +1,5 @@
 import pytorch_lightning as pl
 import argparse
-import sys
 
 from model import PedalNet
 from prepare import prepare
@@ -8,12 +7,12 @@ from prepare import prepare
 
 def main(args):
     """
-    This trains the PedalNet model to match the output data from the input data.
+    Trains the PedalNet model to match the output data from the input data.
 
-    When you resume training from an existing model, you can override hparams such as
-        max_epochs, batch_size, or learning_rate. Note that changing num_channels,
-        dilation_depth, num_repeat, or kernel_size will change the shape of the WaveNet
-        model and is not advised.
+    When you resume training from an existing model, you can override hparams
+    such as max_epochs, batch_size, or learning_rate. Note that changing
+    num_channels, dilation_depth, num_repeat, or kernel_size will change the
+    shape of the WaveNet model and is not advised.
 
     """
 
@@ -51,7 +50,11 @@ if __name__ == "__main__":
     parser.add_argument("--tpu_cores", type=int, default=None)
     parser.add_argument("--cpu", action="store_true")
 
-    parser.add_argument("--model", type=str, default="models/pedalnet/pedalnet.ckpt")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="models/pedalnet/pedalnet.ckpt",
+    )
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     main(args)

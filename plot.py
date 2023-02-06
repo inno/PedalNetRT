@@ -3,11 +3,9 @@ import numpy as np
 
 # import wave
 from scipy.io import wavfile
-import sys
 from scipy import signal
 import argparse
 
-import struct
 import os
 
 
@@ -35,16 +33,20 @@ def analyze_pred_vs_actual(args):
     """Generate plots to analyze the predicted signal vs the actual
     signal.
 
+    Default data created by test.py
+
     Inputs:
-        output_wav : The actual signal, by default will use y_test.wav from the test.py output
-        pred_wav : The predicted signal, by default will use y_pred.wav from the test.py output
-        input_wav : The pre effect signal, by default will use x_test.wav from the test.py output
+        output_wav : Actual signal, defaults to y_test.wav
+        pred_wav : The predicted signal, defaults to y_pred.wav
+        input_wav : The pre effect signal, defaults to x_test.wav
         model_name : Used to add the model name to the plot .png filename
-        show_plots : Default is 1 to show plots, 0 to only generate .png files and suppress plots
+        show_plots : Default is 1 to show plots, 0 to only generate .png files
 
     1. Plots the two signals
-    2. Calculates Error to signal ratio the same way Pedalnet evauluates the model for training
-    3. Plots the absolute value of pred_signal - actual_signal  (to visualize abs error over time)
+    2. Calculates Error to signal ratio the same way Pedalnet evauluates the
+       model for training
+    3. Plots the absolute value of pred_signal - actual_signal (visualize abs
+       error over time)
     4. Plots the spectrogram of (pred_signal - actual signal)
          The idea here is to show problem frequencies from the model training
     """
@@ -86,7 +88,9 @@ def analyze_pred_vs_actual(args):
     e2s_no_filter = error_to_signal(signal1, signal2, use_filter=0)
     print("Error to signal (with pre-emphasis filter): ", e2s)
     print("Error to signal (no pre-emphasis filter): ", e2s_no_filter)
-    fig.suptitle("Predicted vs Actual Signal (error to signal: " + str(round(e2s, 4)) + ")")
+    fig.suptitle(
+        f"Predicted vs Actual Signal (error to signal: {round(e2s, 4)})"
+    )
     # Plot signal difference
     signal_diff = signal2 - signal1
     ax2.plot(Time2, error_list, label="signal diff", color="blue")
@@ -105,9 +109,13 @@ def analyze_pred_vs_actual(args):
     ax3.grid("on")
 
     # Save the plot
-    plt.savefig(model + "/signal_comparison_e2s_" + str(round(e2s, 4)) + ".png", bbox_inches="tight")
+    plt.savefig(
+        model + "/signal_comparison_e2s_" + str(round(e2s, 4)) + ".png",
+        bbox_inches="tight",
+    )
 
-    # Create a zoomed in plot of 0.01 seconds centered at the max input signal value
+    # Create a zoomed in plot of 0.01 seconds centered at the max input signal
+    # value
     sig_temp = signal1.tolist()
     plt.axis(
         [
@@ -117,7 +125,13 @@ def analyze_pred_vs_actual(args):
             max(signal2),
         ]
     )
-    plt.savefig(model + "/detail_signal_comparison_e2s_" + str(round(e2s, 4)) + ".png", bbox_inches="tight")
+    plt.savefig(
+        model
+        + "/detail_signal_comparison_e2s_"
+        + str(round(e2s, 4))
+        + ".png",
+        bbox_inches="tight",
+    )
 
     # Reset the axis
     plt.axis([0, Time3[-1], min(signal2), max(signal2)])
