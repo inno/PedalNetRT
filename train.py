@@ -19,14 +19,15 @@ def main(args):
     prepare(args)
     model = PedalNet(**vars(args))
     trainer = pl.Trainer(
-        resume_from_checkpoint=args.model if args.resume else None,
-        gpus=None if args.cpu or args.tpu_cores else args.gpus,
-        tpu_cores=args.tpu_cores,
-        log_every_n_steps=100,
+        accelerator=args.accelerator,
+        devices=args.devices,
+        log_every_n_steps=args.log_every_n_steps,
         max_epochs=args.max_epochs,
     )
-
-    trainer.fit(model)
+    if args.resume:
+        trainer.fit(ckpt_path=args.model)
+    else:
+        trainer.fit(model)
     trainer.save_checkpoint(args.model)
 
 
@@ -46,9 +47,15 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=3e-3)
 
     parser.add_argument("--max_epochs", type=int, default=1000)
-    parser.add_argument("--gpus", type=int, default=-1)
-    parser.add_argument("--tpu_cores", type=int, default=None)
-    parser.add_argument("--cpu", action="store_true")
+    parser.add_argument("--log_every_n_steps", type=int, default=100)
+
+    parser.add_argument(
+        "--accelerator",
+        type=str,
+        choices=["auto", "cpu", "ipu", "gpu", "tpu"],
+        default="auto",
+    )
+    parser.add_argument("--devices", type=int, default=1)
 
     parser.add_argument(
         "--model",
