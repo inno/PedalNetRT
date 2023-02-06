@@ -139,7 +139,7 @@ class PedalNet(pl.LightningModule):
         )
         torch.set_float32_matmul_precision("high")
 
-    def prepare_data(self):
+    def setup(self, stage):
         data = pickle.load(
             open(os.path.dirname(self.hparams.model) + "/data.pickle", "rb")
         )
