@@ -140,14 +140,17 @@ class PedalNet(pl.LightningModule):
         torch.set_float32_matmul_precision("high")
 
     def prepare_data(self):
-        def ds(x, y):
-            return TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
-
         data = pickle.load(
             open(os.path.dirname(self.hparams.model) + "/data.pickle", "rb")
         )
-        self.train_ds = ds(data["x_train"], data["y_train"])
-        self.valid_ds = ds(data["x_valid"], data["y_valid"])
+        self.train_ds = TensorDataset(
+            torch.from_numpy(data["x_train"]),
+            torch.from_numpy(data["y_train"]),
+        )
+        self.valid_ds = TensorDataset(
+            torch.from_numpy(data["x_valid"]),
+            torch.from_numpy(data["y_valid"]),
+        )
 
     def configure_optimizers(self):
         return torch.optim.Adam(
